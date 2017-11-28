@@ -44,7 +44,6 @@ public class ListenToUserActivity extends BaseActivity
 
     private AIService aiService;
     private ProgressBar progressBar;
-    private ImageView recIndicator;
     private TextView resultTextView;
     private EditText contextEditText;
 
@@ -58,14 +57,7 @@ public class ListenToUserActivity extends BaseActivity
         TTS.init(getApplicationContext());
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        recIndicator = (ImageView) findViewById(R.id.recIndicator);
         resultTextView = (TextView) findViewById(R.id.resultTextView);
-        contextEditText = (EditText) findViewById(R.id.contextEditText);
-
-        Spinner spinner = (Spinner) findViewById(R.id.selectLanguageSpinner);
-        final ArrayAdapter<LanguageConfig> languagesAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, Config.languages);
-        spinner.setAdapter(languagesAdapter);
-        spinner.setOnItemSelectedListener(this);
     }
 
     private void initService(final LanguageConfig selectedLanguage) {
@@ -111,15 +103,7 @@ public class ListenToUserActivity extends BaseActivity
     }
 
     public void startRecognition(final View view) {
-        final String contextString = String.valueOf(contextEditText.getText());
-        if (TextUtils.isEmpty(contextString)) {
-            aiService.startListening();
-        } else {
-            final List<AIContext> contexts = Collections.singletonList(new AIContext(contextString));
-            final RequestExtras requestExtras = new RequestExtras(contexts, null);
-            aiService.startListening(requestExtras);
-        }
-
+        aiService.startListening();
     }
 
     public void stopRecognition(final View view) {
@@ -203,7 +187,6 @@ public class ListenToUserActivity extends BaseActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                recIndicator.setVisibility(View.VISIBLE);
             }
         });
     }
@@ -213,7 +196,6 @@ public class ListenToUserActivity extends BaseActivity
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                recIndicator.setVisibility(View.INVISIBLE);
                 resultTextView.setText("");
             }
         });
@@ -221,18 +203,10 @@ public class ListenToUserActivity extends BaseActivity
 
     @Override
     public void onListeningFinished() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                recIndicator.setVisibility(View.INVISIBLE);
-            }
-        });
     }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        final LanguageConfig selectedLanguage = (LanguageConfig) parent.getItemAtPosition(position);
-        initService(selectedLanguage);
     }
 
     @Override
@@ -245,6 +219,9 @@ public class ListenToUserActivity extends BaseActivity
         super.onStart();
 
         checkAudioRecordPermission();
+
+        final LanguageConfig selectedLanguage = Config.language;
+        initService(selectedLanguage);
     }
 
     private void startActivity(Class<?> cls) {

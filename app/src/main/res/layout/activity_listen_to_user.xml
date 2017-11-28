@@ -17,11 +17,6 @@
         android:layout_alignParentTop="true"
         android:orientation="vertical">
 
-        <Spinner
-            android:id="@+id/selectLanguageSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"></Spinner>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,28 +28,6 @@
                 android:layout_height="wrap_content"
                 android:onClick="startRecognition"
                 android:text="Listen" />
-
-            <Button
-                android:id="@+id/buttonStopListen"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="stopRecognition"
-                android:text="StopListen" />
-
-            <Button
-                android:id="@+id/buttonCancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="cancelRecognition"
-                android:text="Cancel" />
-
-            <ImageView
-                android:id="@+id/recIndicator"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center"
-                android:src="@drawable/recording_shape"
-                android:visibility="invisible" />
 
         </LinearLayout>
 
@@ -81,12 +54,6 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
-                <EditText
-                    android:id="@+id/contextEditText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="add Context here"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
             </LinearLayout>
         </ScrollView>
 
