@@ -17,20 +17,6 @@
         android:layout_alignParentTop="true"
         android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/buttonListen"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="startRecognition"
-                android:text="Listen" />
-
-        </LinearLayout>
-
         <ProgressBar
             android:id="@+id/progressBar"
             style="?android:attr/progressBarStyleHorizontal"

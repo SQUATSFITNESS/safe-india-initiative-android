@@ -1,6 +1,7 @@
 package squats.safeindiainitiative;
 
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -222,6 +223,18 @@ public class ListenToUserActivity extends BaseActivity
 
         final LanguageConfig selectedLanguage = Config.language;
         initService(selectedLanguage);
+
+        final Handler handler = new Handler();
+        final int delay = 2000; //milliseconds
+
+        handler.postDelayed(new Runnable(){
+            public void run(){
+                //do something
+                aiService.startListening();
+
+                handler.postDelayed(this, delay);
+            }
+        }, delay);
     }
 
     private void startActivity(Class<?> cls) {
