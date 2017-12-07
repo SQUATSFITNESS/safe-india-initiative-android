@@ -2,6 +2,9 @@ package squats.safeindiainitiative;
 
 import android.content.Intent;
 import android.os.Handler;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -20,9 +23,11 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import ai.api.AIListener;
@@ -59,6 +64,24 @@ public class ListenToUserActivity extends BaseActivity
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         resultTextView = (TextView) findViewById(R.id.resultTextView);
+
+        recog = SpeechRecognizer.createSpeechRecognizer(this);
+        recog.setRecognitionListener(new RecogListener(this));
+        Intent speechintent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        speechintent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        speechintent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS , 100);
+        speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,  RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+
+
+        readyRecognizeSpeech = new Runnable() {
+            @Override public void run() {
+                startRecognizeSpeech();
+            }
+        };
+
+        startRecognizeSpeech();
+
     }
 
     private void initService(final LanguageConfig selectedLanguage) {
@@ -224,21 +247,167 @@ public class ListenToUserActivity extends BaseActivity
         final LanguageConfig selectedLanguage = Config.language;
         initService(selectedLanguage);
 
-        final Handler handler = new Handler();
-        final int delay = 2000; //milliseconds
-
-        handler.postDelayed(new Runnable(){
-            public void run(){
-                //do something
-                aiService.startListening();
-
-                handler.postDelayed(this, delay);
-            }
-        }, delay);
+//        final Handler handler = new Handler();
+//        final int delay = 2000; //milliseconds
+//
+//        handler.postDelayed(new Runnable(){
+//            public void run(){
+//                //do something
+//                aiService.startListening();
+//
+//                handler.postDelayed(this, delay);
+//            }
+//        }, delay);
     }
 
     private void startActivity(Class<?> cls) {
         final Intent intent = new Intent(this, cls);
         startActivity(intent);
+    }
+
+
+
+    // TRY USING ANDROID SPEACHRECOGNIZR
+    private SpeechRecognizer recog;
+    private Runnable readyRecognizeSpeech;
+    private Handler handler = new Handler();
+
+
+    private void startRecognizeSpeech() {
+        handler.removeCallbacks(readyRecognizeSpeech);
+
+        Intent intent = RecognizerIntent.getVoiceDetailsIntent(getApplicationContext());
+        recog.startListening(intent);
+    }
+
+    private static class RecogListener implements RecognitionListener {
+        private ListenToUserActivity caller;
+        private TextView status;
+        private TextView subStatus;
+        private ProgressBar progressBar;
+        private AIService aiService;
+
+        RecogListener(ListenToUserActivity a) {
+            caller = a;
+            status = (TextView)a.findViewById(R.id.status);
+            subStatus = (TextView)a.findViewById(R.id.sub_status);
+            progressBar = (ProgressBar) a.findViewById(R.id.progressBar);
+            aiService = (AIService) a.aiService;
+        }
+
+        @Override
+        public void onReadyForSpeech(Bundle params) {
+            status.setText("ready for speech");
+            Log.v(TAG,"ready for speech");
+        }
+
+        @Override
+        public void onBeginningOfSpeech() {
+            status.setText("beginning of speech");
+            Log.v(TAG,"beginning of speech");
+        }
+
+        @Override
+        public void onBufferReceived(byte[] buffer) {
+            //status.setText("onBufferReceived");
+            //Log.v(TAG,"onBufferReceived");
+        }
+
+        float maxRms = -10;
+        @Override
+        public void onRmsChanged(float rmsdB) {
+            if(rmsdB > maxRms) {
+                maxRms = rmsdB;
+            }
+
+            String s = String.format("Max volume : % 2.2f[dB]", maxRms);
+            subStatus.setText(s);
+            progressBar.setProgress((int) rmsdB);
+
+            //Log.v(TAG,"recieve : " + rmsdB + "dB");
+        }
+
+        @Override
+        public void onEndOfSpeech() {
+            status.setText("end of speech");
+            Log.v(TAG,"end of speech");
+            caller.handler.postDelayed(caller.readyRecognizeSpeech, 500);
+        }
+
+        @Override
+        public void onError(int error) {
+            status.setText("on error");
+            Log.v(TAG,"on error");
+            switch (error) {
+                case SpeechRecognizer.ERROR_AUDIO:
+                    subStatus.setText("ERROR_AUDIO");
+                    break;
+                case SpeechRecognizer.ERROR_CLIENT:
+                    subStatus.setText("ERROR_CLIENT");
+                    break;
+                case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                    subStatus.setText("ERROR_INSUFFICIENT_PERMISSIONS");
+                    break;
+                case SpeechRecognizer.ERROR_NETWORK:
+                    subStatus.setText("ERROR_NETWORK");
+                    break;
+                case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                    subStatus.setText("ERROR_NETWORK_TIMEOUT");
+                    break;
+                case SpeechRecognizer.ERROR_NO_MATCH:
+                    subStatus.setText("ERROR_NO_MATCH");
+                    caller.handler.postDelayed(caller.readyRecognizeSpeech,1000);
+                    break;
+                case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                    subStatus.setText("ERROR_RECOGNIZER_BUSY");
+                    caller.handler.postDelayed(caller.readyRecognizeSpeech,1000);
+                    break;
+                case SpeechRecognizer.ERROR_SERVER:
+                    subStatus.setText("ERROR_SERVER");
+                    break;
+                case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                    subStatus.setText("ERROR_SPEECH_TIMEOUT");
+                    caller.handler.postDelayed(caller.readyRecognizeSpeech,1000);
+                    break;
+                default:
+            }
+        }
+
+        @Override
+        public void onEvent(int eventType, Bundle params) {
+            status.setText("on event");
+            Log.v(TAG,"on event");
+        }
+
+        @Override
+        public void onPartialResults(Bundle partialResults) {
+            status.setText("on partial results");
+            Log.v(TAG,"on results");
+        }
+
+        @Override
+        public void onResults(Bundle data) {
+            status.setText("on results");
+            Log.v(TAG,"on results");
+
+            ArrayList<String> results = data.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+
+            TextView t = (TextView)caller.findViewById(R.id.resultTextView);
+            t.setText("");
+            for (String s : results) {
+                t.append(s + "\n");
+            }
+
+            maxRms = -10;
+            boolean end=false;
+            for (String s : results) {
+                if (s.equals("Help"))
+                    end=true;
+                if (s.equals("Bachao"))
+                    end=true;
+            }
+
+            //caller.startRecognizeSpeech();
+        }
     }
 }
