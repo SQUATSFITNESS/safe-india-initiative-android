@@ -23,6 +23,11 @@ import android.widget.TextView;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -396,6 +401,54 @@ public class ListenToUserActivity extends BaseActivity
             t.setText("");
             for (String s : results) {
                 t.append(s + "\n");
+
+                if(s.equals("help") || s.startsWith("help ") || s.endsWith(" help") || s.indexOf(" help ") > -1) {
+
+                    BufferedReader reader=null;
+                    try {
+                        URL url = new URL("https://safe-india-initiative-api.herokuapp.com/api/help");
+                        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                        urlConnection.setDoOutput(true);
+                        try {
+                            OutputStreamWriter wr = new OutputStreamWriter(urlConnection.getOutputStream());
+                            wr.write( "{\n" +
+                                    "  \"userDetails\": {\n" +
+                                    "\t\"firstName\": \"Souvik\"\n" +
+                                    "  }\n" +
+                                    "}" );
+                            wr.flush();
+
+                            reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                            StringBuilder sb = new StringBuilder();
+                            String line = null;
+
+                            // Read Server Response
+                            while((line = reader.readLine()) != null)
+                            {
+                                // Append server response in string
+                                sb.append(line + "\n");
+                            }
+
+
+                            t.append(sb.toString());
+                        }
+                        finally{
+                            urlConnection.disconnect();
+                        }
+                    }
+                    catch(Exception e) {
+                        Log.e("ERROR", e.getMessage(), e);
+                    }
+                    finally
+                    {
+                        try
+                        {
+                            reader.close();
+                        }
+
+                        catch(Exception ex) {}
+                    }
+                }
             }
 
             maxRms = -10;
