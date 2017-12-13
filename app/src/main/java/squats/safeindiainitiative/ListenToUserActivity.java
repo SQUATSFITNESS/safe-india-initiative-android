@@ -1,6 +1,7 @@
 package squats.safeindiainitiative;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
@@ -19,12 +20,17 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -34,6 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import ai.api.AIListener;
 import ai.api.RequestExtras;
@@ -74,13 +82,14 @@ public class ListenToUserActivity extends BaseActivity
         recog.setRecognitionListener(new RecogListener(this));
         Intent speechintent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         speechintent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
-        speechintent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS , 100);
-        speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,  RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        speechintent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 100);
+        speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
 
 
         readyRecognizeSpeech = new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 startRecognizeSpeech();
             }
         };
@@ -271,7 +280,6 @@ public class ListenToUserActivity extends BaseActivity
     }
 
 
-
     // TRY USING ANDROID SPEACHRECOGNIZR
     private SpeechRecognizer recog;
     private Runnable readyRecognizeSpeech;
@@ -285,7 +293,7 @@ public class ListenToUserActivity extends BaseActivity
         recog.startListening(intent);
     }
 
-    private static class RecogListener implements RecognitionListener {
+    private class RecogListener implements RecognitionListener {
         private ListenToUserActivity caller;
         private TextView status;
         private TextView subStatus;
@@ -294,8 +302,8 @@ public class ListenToUserActivity extends BaseActivity
 
         RecogListener(ListenToUserActivity a) {
             caller = a;
-            status = (TextView)a.findViewById(R.id.status);
-            subStatus = (TextView)a.findViewById(R.id.sub_status);
+            status = (TextView) a.findViewById(R.id.status);
+            subStatus = (TextView) a.findViewById(R.id.sub_status);
             progressBar = (ProgressBar) a.findViewById(R.id.progressBar);
             aiService = (AIService) a.aiService;
         }
@@ -303,13 +311,13 @@ public class ListenToUserActivity extends BaseActivity
         @Override
         public void onReadyForSpeech(Bundle params) {
             status.setText("ready for speech");
-            Log.v(TAG,"ready for speech");
+            Log.v(TAG, "ready for speech");
         }
 
         @Override
         public void onBeginningOfSpeech() {
             status.setText("beginning of speech");
-            Log.v(TAG,"beginning of speech");
+            Log.v(TAG, "beginning of speech");
         }
 
         @Override
@@ -319,9 +327,10 @@ public class ListenToUserActivity extends BaseActivity
         }
 
         float maxRms = -10;
+
         @Override
         public void onRmsChanged(float rmsdB) {
-            if(rmsdB > maxRms) {
+            if (rmsdB > maxRms) {
                 maxRms = rmsdB;
             }
 
@@ -335,14 +344,14 @@ public class ListenToUserActivity extends BaseActivity
         @Override
         public void onEndOfSpeech() {
             status.setText("end of speech");
-            Log.v(TAG,"end of speech");
+            Log.v(TAG, "end of speech");
             caller.handler.postDelayed(caller.readyRecognizeSpeech, 500);
         }
 
         @Override
         public void onError(int error) {
             status.setText("on error");
-            Log.v(TAG,"on error");
+            Log.v(TAG, "on error");
             switch (error) {
                 case SpeechRecognizer.ERROR_AUDIO:
                     subStatus.setText("ERROR_AUDIO");
@@ -361,18 +370,18 @@ public class ListenToUserActivity extends BaseActivity
                     break;
                 case SpeechRecognizer.ERROR_NO_MATCH:
                     subStatus.setText("ERROR_NO_MATCH");
-                    caller.handler.postDelayed(caller.readyRecognizeSpeech,1000);
+                    caller.handler.postDelayed(caller.readyRecognizeSpeech, 1000);
                     break;
                 case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
                     subStatus.setText("ERROR_RECOGNIZER_BUSY");
-                    caller.handler.postDelayed(caller.readyRecognizeSpeech,1000);
+                    caller.handler.postDelayed(caller.readyRecognizeSpeech, 1000);
                     break;
                 case SpeechRecognizer.ERROR_SERVER:
                     subStatus.setText("ERROR_SERVER");
                     break;
                 case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
                     subStatus.setText("ERROR_SPEECH_TIMEOUT");
-                    caller.handler.postDelayed(caller.readyRecognizeSpeech,1000);
+                    caller.handler.postDelayed(caller.readyRecognizeSpeech, 1000);
                     break;
                 default:
             }
@@ -381,86 +390,107 @@ public class ListenToUserActivity extends BaseActivity
         @Override
         public void onEvent(int eventType, Bundle params) {
             status.setText("on event");
-            Log.v(TAG,"on event");
+            Log.v(TAG, "on event");
         }
 
         @Override
         public void onPartialResults(Bundle partialResults) {
             status.setText("on partial results");
-            Log.v(TAG,"on results");
+            Log.v(TAG, "on results");
         }
 
         @Override
         public void onResults(Bundle data) {
             status.setText("on results");
-            Log.v(TAG,"on results");
+            Log.v(TAG, "on results");
 
             ArrayList<String> results = data.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
-            TextView t = (TextView)caller.findViewById(R.id.resultTextView);
-            t.setText("");
             for (String s : results) {
-                t.append(s + "\n");
 
-                if(s.equals("help") || s.startsWith("help ") || s.endsWith(" help") || s.indexOf(" help ") > -1) {
-
-                    BufferedReader reader=null;
-                    try {
-                        URL url = new URL("https://safe-india-initiative-api.herokuapp.com/api/help");
-                        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                        urlConnection.setDoOutput(true);
-                        try {
-                            OutputStreamWriter wr = new OutputStreamWriter(urlConnection.getOutputStream());
-                            wr.write( "{\n" +
-                                    "  \"userDetails\": {\n" +
-                                    "\t\"firstName\": \"Souvik\"\n" +
-                                    "  }\n" +
-                                    "}" );
-                            wr.flush();
-
-                            reader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
-                            StringBuilder sb = new StringBuilder();
-                            String line = null;
-
-                            // Read Server Response
-                            while((line = reader.readLine()) != null)
-                            {
-                                // Append server response in string
-                                sb.append(line + "\n");
-                            }
-
-
-                            t.append(sb.toString());
-                        }
-                        finally{
-                            urlConnection.disconnect();
-                        }
-                    }
-                    catch(Exception e) {
-                        Log.e("ERROR", e.getMessage(), e);
-                    }
-                    finally
-                    {
-                        try
-                        {
-                            reader.close();
-                        }
-
-                        catch(Exception ex) {}
-                    }
+                String triggerWord = "hello";
+                if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
+                    new SendPostRequest().execute();
                 }
             }
 
             maxRms = -10;
-            boolean end=false;
+            boolean end = false;
             for (String s : results) {
                 if (s.equals("Help"))
-                    end=true;
+                    end = true;
                 if (s.equals("Bachao"))
-                    end=true;
+                    end = true;
             }
 
             //caller.startRecognizeSpeech();
         }
     }
+
+    class SendPostRequest extends AsyncTask<String, Void, String> {
+
+        protected void onPreExecute() {
+        }
+
+        protected String doInBackground(String... arg0) {
+
+            try {
+
+                URL url = new URL("https://safe-india-initiative-api.herokuapp.com/api/help");
+
+                JSONObject postDataParams = new JSONObject();
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000 /* milliseconds */);
+                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type", "application/json");
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write("{\"userDetails\": {\"userId\": \"12345\",\"firstName\": \"Souvik\"}}");
+
+                writer.flush();
+                writer.close();
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+                    BufferedReader in = new BufferedReader(new
+                            InputStreamReader(
+                            conn.getInputStream()));
+
+                    StringBuffer sb = new StringBuffer("");
+                    String line = "";
+
+                    while ((line = in.readLine()) != null) {
+
+                        sb.append(line);
+                        break;
+                    }
+
+                    in.close();
+                    return sb.toString();
+
+                } else {
+                    return new String("false : " + responseCode);
+                }
+            } catch (Exception e) {
+                return new String("Exception: " + e.getMessage());
+            }
+
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
 }
