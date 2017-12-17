@@ -1,11 +1,20 @@
 package squats.safeindiainitiative;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -56,10 +65,15 @@ import ai.api.model.Result;
 import ai.api.model.Status;
 
 public class ListenToUserActivity extends BaseActivity
-        implements AIListener, AdapterView.OnItemSelectedListener {
+        implements AIListener, AdapterView.OnItemSelectedListener, LocationListener {
 
     public static final String TAG = ListenToUserActivity.class.getName();
+    public static final int LOCATION_REQUEST_CODE = 99;
 
+    LocationManager lm;
+    String provider;
+    Location l;
+    double lng, lat;
 
     private AIService aiService;
     private ProgressBar progressBar;
@@ -86,6 +100,12 @@ public class ListenToUserActivity extends BaseActivity
         speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
 
+        //get location service
+        lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        Criteria c = new Criteria();
+        provider = lm.getBestProvider(c, false);
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
 
         readyRecognizeSpeech = new Runnable() {
             @Override
@@ -110,6 +130,42 @@ public class ListenToUserActivity extends BaseActivity
 
         aiService = AIService.getService(this, config);
         aiService.setListener(this);
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case LOCATION_REQUEST_CODE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // location-related task you need to do.
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_FINE_LOCATION)
+                            == PackageManager.PERMISSION_GRANTED) {
+
+                        l = lm.getLastKnownLocation(provider);
+                        if (l != null) {
+                            //get latitude and longitude of the location
+                            lng = l.getLongitude();
+                            lat = l.getLatitude();
+                        }
+
+
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "This app cannot work without knowing your location",
+                            Toast.LENGTH_LONG).show();
+
+                }
+                return;
+            }
+
+        }
     }
 
 
@@ -261,17 +317,19 @@ public class ListenToUserActivity extends BaseActivity
         final LanguageConfig selectedLanguage = Config.language;
         initService(selectedLanguage);
 
-//        final Handler handler = new Handler();
-//        final int delay = 2000; //milliseconds
-//
-//        handler.postDelayed(new Runnable(){
-//            public void run(){
-//                //do something
-//                aiService.startListening();
-//
-//                handler.postDelayed(this, delay);
-//            }
-//        }, delay);
+        final Handler handler = new Handler();
+        final int delay = 10000; //milliseconds
+
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                //do something
+                String locationUrl = "https://safe-india-initiative-api.herokuapp.com/api/user-location";
+                String locationPosData = "{\"userDetails\": {\"userId\": \"12345\",\"lat\":" + lat + ",\"long\":" + lng + "}}";
+                new SendPostRequest().execute(locationUrl, locationPosData);
+
+                handler.postDelayed(this, delay);
+            }
+        }, delay);
     }
 
     private void startActivity(Class<?> cls) {
@@ -291,6 +349,27 @@ public class ListenToUserActivity extends BaseActivity
 
         Intent intent = RecognizerIntent.getVoiceDetailsIntent(getApplicationContext());
         recog.startListening(intent);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        lng=l.getLongitude();
+        lat=l.getLatitude();
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
     }
 
     private class RecogListener implements RecognitionListener {
