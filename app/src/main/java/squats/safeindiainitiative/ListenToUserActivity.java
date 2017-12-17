@@ -10,6 +10,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -17,6 +18,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -74,6 +76,7 @@ public class ListenToUserActivity extends BaseActivity
     String provider;
     Location l;
     double lng, lat;
+    String deviceId;
 
     private AIService aiService;
     private ProgressBar progressBar;
@@ -99,6 +102,9 @@ public class ListenToUserActivity extends BaseActivity
         speechintent.putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 100);
         speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         speechintent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+
+        deviceId = Settings.Secure.getString(getContentResolver(),
+                Settings.Secure.ANDROID_ID);;
 
         //get location service
         lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -324,7 +330,7 @@ public class ListenToUserActivity extends BaseActivity
             public void run() {
                 //do something
                 String locationUrl = "https://safe-india-initiative-api.herokuapp.com/api/user-location";
-                String locationPosData = "{\"userDetails\": {\"userId\": \"12345\",\"lat\":" + lat + ",\"long\":" + lng + "}}";
+                String locationPosData = "{\"userDetails\": {\"userId\": \"" + deviceId  + "\",\"lat\":" + lat + ",\"long\":" + lng + "}}";
                 new SendPostRequest().execute(locationUrl, locationPosData);
 
                 handler.postDelayed(this, delay);
@@ -490,7 +496,7 @@ public class ListenToUserActivity extends BaseActivity
                 String triggerWord = "hello";
                 if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
                     String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
-                    String helpPosData = "{\"userDetails\": {\"userId\": \"12345\",\"firstName\": \"Souvik\"}}";
+                    String helpPosData = "{\"userDetails\": {\"userId\": \"" + deviceId + "\"}}";
                     new SendPostRequest().execute(helpUrl, helpPosData);
 
                     new SendPostRequest().execute(helpUrl, helpPosData);
