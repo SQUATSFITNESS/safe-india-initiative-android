@@ -353,8 +353,8 @@ public class ListenToUserActivity extends BaseActivity
 
     @Override
     public void onLocationChanged(Location location) {
-        lng=l.getLongitude();
-        lat=l.getLatitude();
+        lng = l.getLongitude();
+        lat = l.getLatitude();
     }
 
     @Override
@@ -489,7 +489,11 @@ public class ListenToUserActivity extends BaseActivity
 
                 String triggerWord = "hello";
                 if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
-                    new SendPostRequest().execute();
+                    String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
+                    String helpPosData = "{\"userDetails\": {\"userId\": \"12345\",\"firstName\": \"Souvik\"}}";
+                    new SendPostRequest().execute(helpUrl, helpPosData);
+
+                    new SendPostRequest().execute(helpUrl, helpPosData);
                 }
             }
 
@@ -515,7 +519,7 @@ public class ListenToUserActivity extends BaseActivity
 
             try {
 
-                URL url = new URL("https://safe-india-initiative-api.herokuapp.com/api/help");
+                URL url = new URL(arg0[0]);
 
                 JSONObject postDataParams = new JSONObject();
 
@@ -530,7 +534,7 @@ public class ListenToUserActivity extends BaseActivity
                 OutputStream os = conn.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(
                         new OutputStreamWriter(os, "UTF-8"));
-                writer.write("{\"userDetails\": {\"userId\": \"12345\",\"firstName\": \"Souvik\"}}");
+                writer.write(arg0[1]);
 
                 writer.flush();
                 writer.close();
