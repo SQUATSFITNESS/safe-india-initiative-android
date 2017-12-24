@@ -33,6 +33,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
@@ -94,6 +95,10 @@ public class ListenToUserActivity extends BaseActivity
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         resultTextView = (TextView) findViewById(R.id.resultTextView);
+
+        if(recog != null) {
+            recog.destroy();
+        }
 
         recog = SpeechRecognizer.createSpeechRecognizer(this);
         recog.setRecognitionListener(new RecogListener(this));
@@ -329,9 +334,16 @@ public class ListenToUserActivity extends BaseActivity
         handler.postDelayed(new Runnable() {
             public void run() {
                 //do something
+                String fcm = FirebaseInstanceId.getInstance().getToken();
                 String locationUrl = "https://safe-india-initiative-api.herokuapp.com/api/user-location";
-                String locationPosData = "{\"userDetails\": {\"userId\": \"" + deviceId  + "\",\"lat\":" + lat + ",\"long\":" + lng + "}}";
-                new SendPostRequest().execute(locationUrl, locationPosData);
+                String locationPosData = "{\"userDetails\": {\"userId\": \"" + deviceId  + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\" }}";
+
+                if(lat != 0 && lng != 0){
+                    new SendPostRequest().execute(locationUrl, locationPosData);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
+                            Toast.LENGTH_LONG).show();
+                }
 
                 handler.postDelayed(this, delay);
             }
@@ -395,14 +407,11 @@ public class ListenToUserActivity extends BaseActivity
 
         @Override
         public void onReadyForSpeech(Bundle params) {
-            status.setText("ready for speech");
-            Log.v(TAG, "ready for speech");
+            status.setText("Speak now...");
         }
 
         @Override
         public void onBeginningOfSpeech() {
-            status.setText("beginning of speech");
-            Log.v(TAG, "beginning of speech");
         }
 
         @Override
@@ -428,15 +437,12 @@ public class ListenToUserActivity extends BaseActivity
 
         @Override
         public void onEndOfSpeech() {
-            status.setText("end of speech");
-            Log.v(TAG, "end of speech");
+            status.setText("");
             caller.handler.postDelayed(caller.readyRecognizeSpeech, 500);
         }
 
         @Override
         public void onError(int error) {
-            status.setText("on error");
-            Log.v(TAG, "on error");
             switch (error) {
                 case SpeechRecognizer.ERROR_AUDIO:
                     subStatus.setText("ERROR_AUDIO");
@@ -474,32 +480,32 @@ public class ListenToUserActivity extends BaseActivity
 
         @Override
         public void onEvent(int eventType, Bundle params) {
-            status.setText("on event");
-            Log.v(TAG, "on event");
         }
 
         @Override
         public void onPartialResults(Bundle partialResults) {
-            status.setText("on partial results");
-            Log.v(TAG, "on results");
         }
 
         @Override
         public void onResults(Bundle data) {
-            status.setText("on results");
-            Log.v(TAG, "on results");
-
             ArrayList<String> results = data.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
 
             for (String s : results) {
 
                 String triggerWord = "hello";
                 if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
+                    String fcm = FirebaseInstanceId.getInstance().getToken();
                     String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
-                    String helpPosData = "{\"userDetails\": {\"userId\": \"" + deviceId + "\"}}";
+                    String helpPosData = "{\"userDetails\": {\"userId\": \"" + deviceId  + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\" }}";
                     new SendPostRequest().execute(helpUrl, helpPosData);
 
-                    new SendPostRequest().execute(helpUrl, helpPosData);
+                    if(lat != 0 && lng != 0){
+                        Log.d("API call", "POST /help " + helpPosData);
+                        new SendPostRequest().execute(helpUrl, helpPosData);
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
+                                Toast.LENGTH_LONG).show();
+                    }
                 }
             }
 
@@ -567,7 +573,7 @@ public class ListenToUserActivity extends BaseActivity
                     return sb.toString();
 
                 } else {
-                    return new String("false : " + responseCode);
+                    return new String("API call failed. URL: " + arg0[0] + " param: " + arg0[1] + " Response code: " + responseCode);
                 }
             } catch (Exception e) {
                 return new String("Exception: " + e.getMessage());
