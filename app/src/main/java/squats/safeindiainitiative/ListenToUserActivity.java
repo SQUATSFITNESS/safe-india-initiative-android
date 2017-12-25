@@ -499,11 +499,14 @@ public class ListenToUserActivity extends BaseActivity
                     String fcm = FirebaseInstanceId.getInstance().getToken();
                     String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
                     String helpPosData = "{\"userDetails\": {\"userId\": \"" + deviceId  + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\" }}";
-                    new SendPostRequest().execute(helpUrl, helpPosData);
 
                     if(lat != 0 && lng != 0){
                         Log.d("API call", "POST /help " + helpPosData);
                         new SendPostRequest().execute(helpUrl, helpPosData);
+
+                        Intent intent = new Intent(this.caller, HelpArrivingMapsActivity.class);
+                        startActivity(intent);
+
                     } else {
                         Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
                                 Toast.LENGTH_LONG).show();

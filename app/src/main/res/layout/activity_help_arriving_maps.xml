@@ -6,7 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="squats.safeindiainitiative.MapsActivity">
+    tools:context="squats.safeindiainitiative.HelpArrivingMapsActivity">
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:maxHeight="60dp"
-                tools:context="squats.safeindiainitiative.MapsActivity" />
+                tools:context="squats.safeindiainitiative.HelpArrivingMapsActivity" />
         </LinearLayout>
 
         <LinearLayout
@@ -46,15 +46,10 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/help_message"
+                        android:id="@+id/help_arriving_message"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textAppearance="?android:attr/textAppearanceMedium" />
-                    <Button
-                        android:id="@+id/button_can_help"
-                        android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"
-                        android:text="@string/can_help" />
 
                 </LinearLayout>
             </ScrollView>

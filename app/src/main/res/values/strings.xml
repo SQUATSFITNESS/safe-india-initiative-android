@@ -14,4 +14,5 @@
     <string name="text_sample_text">Text sample</string>
     <string name="title_app_widget">Voice command</string>
     <string name="non_empty_query">Query should not be empty</string>
+    <string name="can_help">Yes, I will</string>
 </resources>
