@@ -27,10 +27,13 @@ public class SafeIndiaMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Notification Message lat: " + lat);
         Double lng = Double.parseDouble(remoteMessage.getData().get("long"));
         Log.d(TAG, "Notification Message lat: " + lng);
+        String helpSeekerFcm = remoteMessage.getData().get("helpSeekerFcm");
+        Log.d(TAG, "Notification Message helpSeekerFcm: " + helpSeekerFcm);
 
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("lat", lat);
         intent.putExtra("long", lng);
+        intent.putExtra("helpSeekerFcm", helpSeekerFcm);
         startActivity(intent);
     }
 }

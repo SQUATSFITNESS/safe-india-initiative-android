@@ -35,6 +35,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private TextView help_message;
     private Button helpButton;
+    private Double lat, lng;
+    private String helpSeekerFcm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +46,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        Intent intent = getIntent();
+        lat = intent.getDoubleExtra("lat", 0);
+        lng = intent.getDoubleExtra("long", 0);
+        helpSeekerFcm = intent.getStringExtra("helpSeekerFcm");
+
         help_message = (TextView) this.findViewById(R.id.help_message);
 
         helpButton = (Button) this.findViewById(R.id.button_can_help);
@@ -54,7 +62,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                 String fcm = FirebaseInstanceId.getInstance().getToken();
                 String helperUrl = "https://safe-india-initiative-api.herokuapp.com/api/helpers";
-                String helperPosData = "{\"userId\": \"" + deviceId  + "\",\"lat\":" + "0" + ",\"long\":" + "0" + ", \"fcm\":\"" + fcm + "\", \"helpSeekerFcm\" : \"123\"}";
+                String helperPosData = "{\"userId\": \"" + deviceId  + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\", \"helpSeekerFcm\" : \"" + helpSeekerFcm + "\"}";
                 new MapsActivity.SendPostRequest().execute(helperUrl, helperPosData);
             }
         });
@@ -74,10 +82,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        Intent intent = getIntent();
-        double lat = intent.getDoubleExtra("lat", 0);
-        double lng = intent.getDoubleExtra("long", 0);
 
         // Add a marker in Sydney and move the camera
         LatLng userLocation = new LatLng(lat, lng);
