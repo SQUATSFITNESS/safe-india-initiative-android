@@ -452,6 +452,8 @@ public class ListenToUserActivity extends BaseActivity
                     break;
                 case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
                     subStatus.setText("ERROR_INSUFFICIENT_PERMISSIONS");
+                    checkAudioRecordPermission();
+                    caller.handler.postDelayed(caller.readyRecognizeSpeech, 1000);
                     break;
                 case SpeechRecognizer.ERROR_NETWORK:
                     subStatus.setText("ERROR_NETWORK");

@@ -1,5 +1,6 @@
 package squats.safeindiainitiative;
 
+import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,5 +22,15 @@ public class SafeIndiaMessagingService extends FirebaseMessagingService {
         String message = remoteMessage.getNotification().getBody();
         Log.d(TAG, "From: " + remoteMessage.getFrom());
         Log.d(TAG, "Notification Message Body: " + message);
+
+        Double lat = Double.parseDouble(remoteMessage.getData().get("lat"));
+        Log.d(TAG, "Notification Message lat: " + lat);
+        Double lng = Double.parseDouble(remoteMessage.getData().get("long"));
+        Log.d(TAG, "Notification Message lat: " + lng);
+
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("lat", lat);
+        intent.putExtra("long", lng);
+        startActivity(intent);
     }
 }
