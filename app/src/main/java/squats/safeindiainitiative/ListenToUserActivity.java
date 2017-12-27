@@ -343,6 +343,8 @@ public class ListenToUserActivity extends BaseActivity
                 } else {
                     Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
                             Toast.LENGTH_LONG).show();
+                    ActivityCompat.requestPermissions(ListenToUserActivity.this,
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
                 }
 
                 handler.postDelayed(this, delay);
@@ -505,6 +507,8 @@ public class ListenToUserActivity extends BaseActivity
                         new SendPostRequest().execute(helpUrl, helpPosData);
 
                         Intent intent = new Intent(this.caller, HelpArrivingMapsActivity.class);
+                        intent.putExtra("lat", lat);
+                        intent.putExtra("long", lng);
                         startActivity(intent);
 
                     } else {

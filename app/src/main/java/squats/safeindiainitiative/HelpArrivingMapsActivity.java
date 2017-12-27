@@ -33,6 +33,7 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
 
     private GoogleMap mMap;
     private TextView help_arriving_message;
+    private TextView helper_count;
     private Button helpButton;
 
     @Override
@@ -44,6 +45,7 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
         help_arriving_message = (TextView) this.findViewById(R.id.help_arriving_message);
+        helper_count = (TextView) this.findViewById(R.id.helper_count);
     }
 
 
@@ -60,17 +62,14 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        Intent intent = getIntent();
-        double lat = intent.getDoubleExtra("lat", 0);
-        double lng = intent.getDoubleExtra("long", 0);
-
-        // Add a marker in Sydney and move the camera
+        help_arriving_message.setText("Notifying nearby users for help...");
+        helper_count.setText("Helpers count: 0");
+        Double lat = this.getIntent().getDoubleExtra("lat", 0);
+        Double lng = this.getIntent().getDoubleExtra("long", 0);
         LatLng userLocation = new LatLng(lat, lng);
-        mMap.addMarker(new MarkerOptions().position(userLocation).title("Help seeker"));
+        mMap.addMarker(new MarkerOptions().position(userLocation).title("You"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
-
-        help_arriving_message.setText("Help reaching soon...");
-
+        mMap.setMinZoomPreference(14);
     }
 
 
@@ -156,6 +155,8 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
                     LatLng userLocation = new LatLng(lat, lng);
                     mMap.addMarker(new MarkerOptions().position(userLocation).title("Helper"));
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
+                    mMap.setMinZoomPreference(14);
+                    help_arriving_message.setText("Help arriving soon...");
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
