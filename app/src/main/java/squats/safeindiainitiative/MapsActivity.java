@@ -87,6 +87,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng userLocation = new LatLng(lat, lng);
         mMap.addMarker(new MarkerOptions().position(userLocation).title("Help seeker"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
+        mMap.setMinZoomPreference(16);
 
         help_message.setText("Can you reach the person now?");
 
@@ -156,6 +157,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         protected void onPostExecute(String result) {
             Toast.makeText(getApplicationContext(), result,
                     Toast.LENGTH_LONG).show();
+
+            help_message.setText("Please reach the marker on map as soon as possible");
+            helpButton.setVisibility(View.INVISIBLE);
         }
     }
 }

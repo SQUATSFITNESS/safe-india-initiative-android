@@ -68,8 +68,8 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
         Double lng = this.getIntent().getDoubleExtra("long", 0);
         LatLng userLocation = new LatLng(lat, lng);
         mMap.addMarker(new MarkerOptions().position(userLocation).title("You"));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(16));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
-        mMap.setMinZoomPreference(14);
     }
 
 
@@ -141,9 +141,6 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
 
         @Override
         protected void onPostExecute(String result) {
-            Toast.makeText(getApplicationContext(), result,
-                    Toast.LENGTH_LONG).show();
-
             JSONArray helpers = null;
             try {
                 helpers = new JSONArray(result);
@@ -154,14 +151,12 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
                     Double lng = (Double) helper.get("long");
                     LatLng userLocation = new LatLng(lat, lng);
                     mMap.addMarker(new MarkerOptions().position(userLocation).title("Helper"));
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
-                    mMap.setMinZoomPreference(14);
                     help_arriving_message.setText("Help arriving soon...");
                 }
+                helper_count.setText("Helpers count: " + helpers.length());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }
     }
 }
