@@ -496,38 +496,31 @@ public class ListenToUserActivity extends BaseActivity
 
             for (String s : results) {
 
-                String triggerWord = "hello";
-                if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
-                    String fcm = FirebaseInstanceId.getInstance().getToken();
-                    String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
-                    String helpPosData = "{\"userDetails\": {\"userId\": \"" + deviceId  + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\" }}";
+                String[] triggerWords = new String[] {"help", "bachao"};
+                for (String triggerWord : triggerWords) {
+                    if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
+                        String fcm = FirebaseInstanceId.getInstance().getToken();
+                        String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
+                        String helpPosData = "{\"userDetails\": {\"userId\": \"" + deviceId + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\" }}";
 
-                    if(lat != 0 && lng != 0){
-                        Log.d("API call", "POST /help " + helpPosData);
-                        new SendPostRequest().execute(helpUrl, helpPosData);
+                        if (lat != 0 && lng != 0) {
+                            Log.d("API call", "POST /help " + helpPosData);
+                            new SendPostRequest().execute(helpUrl, helpPosData);
 
-                        Intent intent = new Intent(this.caller, HelpArrivingMapsActivity.class);
-                        intent.putExtra("lat", lat);
-                        intent.putExtra("long", lng);
-                        startActivity(intent);
+                            Intent intent = new Intent(this.caller, HelpArrivingMapsActivity.class);
+                            intent.putExtra("lat", lat);
+                            intent.putExtra("long", lng);
+                            startActivity(intent);
 
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
-                                Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
+                                    Toast.LENGTH_LONG).show();
+                        }
                     }
                 }
             }
 
             maxRms = -10;
-            boolean end = false;
-            for (String s : results) {
-                if (s.equals("Help"))
-                    end = true;
-                if (s.equals("Bachao"))
-                    end = true;
-            }
-
-            //caller.startRecognizeSpeech();
         }
     }
 
