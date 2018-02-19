@@ -15,5 +15,6 @@
     <string name="title_app_widget">Voice command</string>
     <string name="non_empty_query">Query should not be empty</string>
     <string name="can_help">Yes, I will</string>
+    <string name="navigate">Navigate</string>
     <string name="ask_for_help">Ask for Help</string>
 </resources>
