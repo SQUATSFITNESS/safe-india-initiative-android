@@ -10,11 +10,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.iid.FirebaseInstanceId;
 
@@ -34,9 +37,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private TextView help_message;
-    private Button helpButton;
+    private Button canHelpButton;
     private Double lat, lng;
+    private Double myLat, myLng;
     private String helpSeekerFcm;
+    private LatLng helpSeekerLocation, myLocation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +59,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         help_message = (TextView) this.findViewById(R.id.help_message);
 
-        helpButton = (Button) this.findViewById(R.id.button_can_help);
-        helpButton.setOnClickListener(new View.OnClickListener() {
+        canHelpButton = (Button) this.findViewById(R.id.button_can_help);
+        canHelpButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 String deviceId = Settings.Secure.getString(getContentResolver(),
                         Settings.Secure.ANDROID_ID);;
@@ -66,8 +71,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 new MapsActivity.SendPostRequest().execute(helperUrl, helperPosData);
             }
         });
-
     }
+
 
 
     /**
@@ -84,13 +89,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         // Add a marker in Sydney and move the camera
-        LatLng userLocation = new LatLng(lat, lng);
-        mMap.addMarker(new MarkerOptions().position(userLocation).title("Help seeker"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
+        helpSeekerLocation = new LatLng(lat, lng);
+        AIApplication application = (AIApplication) this.getApplication();
+        myLocation = new LatLng(application.userLat, application.userLong);
+        Marker helpSeekerMarker = mMap.addMarker(new MarkerOptions().position(helpSeekerLocation).title("Help seeker"));
+        helpSeekerMarker.showInfoWindow();
+        Marker myMarker = mMap.addMarker(new MarkerOptions().position(myLocation).title("You"));
+
+
         mMap.setMinZoomPreference(16);
-
         help_message.setText("Can you reach the person now?");
-
+        mMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+            @Override
+            public void onMapLoaded() {
+                //set zoom level to show both the markers
+                LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                builder.include(helpSeekerLocation);
+                builder.include(myLocation);
+                LatLngBounds bounds = builder.build();
+                int padding = 90; // offset from edges of the map in pixels
+                CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, padding);
+                mMap.moveCamera(cu);
+            }
+        });
     }
 
 
@@ -159,7 +180,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Toast.LENGTH_LONG).show();
 
             help_message.setText("Please reach the marker on map as soon as possible");
-            helpButton.setVisibility(View.INVISIBLE);
+            canHelpButton.setVisibility(View.INVISIBLE);
         }
     }
 }

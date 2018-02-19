@@ -24,6 +24,8 @@ import ai.api.util.BluetoothController;
 
 public class AIApplication extends Application {
 
+    public Double userLat, userLong;
+
     private static final String TAG = AIApplication.class.getSimpleName();
 
     private int activitiesCount;

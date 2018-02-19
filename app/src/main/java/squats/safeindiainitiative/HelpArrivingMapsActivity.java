@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,11 +65,11 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
 
         help_arriving_message.setText("Notifying nearby users for help...");
         helper_count.setText("Helpers count: 0");
-        Double lat = this.getIntent().getDoubleExtra("lat", 0);
-        Double lng = this.getIntent().getDoubleExtra("long", 0);
+        Double lat = this.getIntent().getDoubleExtra("lat", new Double(0.0));
+        Double lng = this.getIntent().getDoubleExtra("long", new Double(0.0));
         LatLng userLocation = new LatLng(lat, lng);
         mMap.addMarker(new MarkerOptions().position(userLocation).title("You"));
-        mMap.moveCamera(CameraUpdateFactory.zoomTo(16));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(18));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(userLocation));
     }
 
@@ -144,14 +145,17 @@ public class HelpArrivingMapsActivity extends FragmentActivity implements OnMapR
             JSONArray helpers = null;
             try {
                 helpers = new JSONArray(result);
+                Log.d("result",result);
 
                 for(int i = 0; i < helpers.length(); i++) {
                     JSONObject helper = (JSONObject) helpers.get(i);
                     Double lat = (Double) helper.get("lat");
-                    Double lng = (Double) helper.get("long");
-                    LatLng userLocation = new LatLng(lat, lng);
-                    mMap.addMarker(new MarkerOptions().position(userLocation).title("Helper"));
-                    help_arriving_message.setText("Help arriving soon...");
+                    Double lng = (Double) helper.get("long") ;
+                    if(lat != 0 && lng != 0) {
+                        LatLng userLocation = new LatLng(lat, lng);
+                        mMap.addMarker(new MarkerOptions().position(userLocation).title("Helper"));
+                        help_arriving_message.setText("Help arriving soon...");
+                    }
                 }
                 helper_count.setText("Helpers count: " + helpers.length());
             } catch (JSONException e) {

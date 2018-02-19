@@ -16,20 +16,14 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,20 +41,16 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
 import ai.api.AIListener;
-import ai.api.RequestExtras;
 import ai.api.android.AIConfiguration;
 import ai.api.android.AIService;
 import ai.api.android.GsonFactory;
-import ai.api.model.AIContext;
 import ai.api.model.AIError;
 import ai.api.model.AIResponse;
 import ai.api.model.Metadata;
@@ -81,8 +71,9 @@ public class ListenToUserActivity extends BaseActivity
 
     private AIService aiService;
     private ProgressBar progressBar;
-    private TextView resultTextView;
+    private TextView resultTextView, userLocationTextView, userLocationLong;
     private EditText contextEditText;
+    private Button askForHelpButton;
 
     private Gson gson = GsonFactory.getGson();
 
@@ -95,6 +86,7 @@ public class ListenToUserActivity extends BaseActivity
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         resultTextView = (TextView) findViewById(R.id.resultTextView);
+        userLocationTextView = (TextView) findViewById(R.id.userLocationLatLong);
 
         if(recog != null) {
             recog.destroy();
@@ -110,6 +102,15 @@ public class ListenToUserActivity extends BaseActivity
 
         deviceId = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ANDROID_ID);;
+
+
+        askForHelpButton = (Button) this.findViewById(R.id.button_ask_for_help);
+        askForHelpButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                SendPOSTCallForHelp();
+            }
+        });
+
 
         //get location service
         lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -164,6 +165,9 @@ public class ListenToUserActivity extends BaseActivity
                             //get latitude and longitude of the location
                             lng = l.getLongitude();
                             lat = l.getLatitude();
+
+                            ((AIApplication) this.getApplication()).userLat = lat;
+                            ((AIApplication) this.getApplication()).userLong = lng;
                         }
 
 
@@ -340,6 +344,7 @@ public class ListenToUserActivity extends BaseActivity
 
                 if(lat != 0 && lng != 0){
                     new SendPostRequest().execute(locationUrl, locationPosData);
+                    userLocationTextView.setText("User location: " + lat + ", " + lng);
                 } else {
                     Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
                             Toast.LENGTH_LONG).show();
@@ -354,6 +359,7 @@ public class ListenToUserActivity extends BaseActivity
 
     private void startActivity(Class<?> cls) {
         final Intent intent = new Intent(this, cls);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 
@@ -496,31 +502,36 @@ public class ListenToUserActivity extends BaseActivity
 
             for (String s : results) {
 
-                String[] triggerWords = new String[] {"help", "bachao"};
+                String[] triggerWords = new String[] {"help", "bachao", "hello"};
                 for (String triggerWord : triggerWords) {
                     if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
-                        String fcm = FirebaseInstanceId.getInstance().getToken();
-                        String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
-                        String helpPosData = "{\"userDetails\": {\"userId\": \"" + deviceId + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\" }}";
-
-                        if (lat != 0 && lng != 0) {
-                            Log.d("API call", "POST /help " + helpPosData);
-                            new SendPostRequest().execute(helpUrl, helpPosData);
-
-                            Intent intent = new Intent(this.caller, HelpArrivingMapsActivity.class);
-                            intent.putExtra("lat", lat);
-                            intent.putExtra("long", lng);
-                            startActivity(intent);
-
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
-                                    Toast.LENGTH_LONG).show();
-                        }
+                        SendPOSTCallForHelp();
                     }
                 }
             }
 
             maxRms = -10;
+        }
+    }
+
+    private void SendPOSTCallForHelp() {
+        String fcm = FirebaseInstanceId.getInstance().getToken();
+        String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
+        String helpPosData = "{\"userDetails\": {\"userId\": \"" + deviceId + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\" }}";
+
+        if (lat != 0 && lng != 0) {
+            Log.d("API call", "POST /help " + helpPosData);
+            new SendPostRequest().execute(helpUrl, helpPosData);
+
+            Intent intent = new Intent(this, HelpArrivingMapsActivity.class);
+            intent.putExtra("lat", lat);
+            intent.putExtra("long", lng);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+        } else {
+            Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
+                    Toast.LENGTH_LONG).show();
         }
     }
 

@@ -1,6 +1,7 @@
 package squats.safeindiainitiative;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -34,6 +35,7 @@ public class SafeIndiaMessagingService extends FirebaseMessagingService {
         intent.putExtra("lat", lat);
         intent.putExtra("long", lng);
         intent.putExtra("helpSeekerFcm", helpSeekerFcm);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 }
