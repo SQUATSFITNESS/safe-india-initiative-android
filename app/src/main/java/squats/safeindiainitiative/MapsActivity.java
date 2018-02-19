@@ -78,7 +78,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         navigateButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
 
-                Uri gmmIntentUri = Uri.parse("google.navigation:q=12.93207349,77.63141693&mode=w");
+                Uri gmmIntentUri = Uri.parse("google.navigation:q=" + lat + "," + lng + "&mode=w");
                 Intent intent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
