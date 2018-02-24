@@ -1,4 +1,4 @@
-package squats.safeindiainitiative;
+package in.squats.safeindiainitiative;
 
 import android.util.Log;
 

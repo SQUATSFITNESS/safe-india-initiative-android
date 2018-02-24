@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package squats.safeindiainitiative;
+package in.squats.safeindiainitiative;
 
-public class LanguageConfig {
-    private final String languageCode;
-    private final String accessToken;
+import android.content.Context;
+import android.speech.tts.TextToSpeech;
 
-    public LanguageConfig(final String languageCode, final String accessToken) {
-        this.languageCode = languageCode;
-        this.accessToken = accessToken;
+public class TTS {
+
+    private static TextToSpeech textToSpeech;
+
+    public static void init(final Context context) {
+        if (textToSpeech == null) {
+            textToSpeech = new TextToSpeech(context, new TextToSpeech.OnInitListener() {
+                @Override
+                public void onInit(int i) {
+
+                }
+            });
+        }
     }
 
-    public String getLanguageCode() {
-        return languageCode;
-    }
-
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    @Override
-    public String toString() {
-        return languageCode;
+    public static void speak(final String text) {
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
     }
 }

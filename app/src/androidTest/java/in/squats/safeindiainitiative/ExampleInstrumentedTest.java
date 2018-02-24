@@ -1,4 +1,4 @@
-package squats.safeindiainitiative;
+package in.squats.safeindiainitiative;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("squats.safeindiainitiative", appContext.getPackageName());
+        assertEquals("in.squats.safeindiainitiative", appContext.getPackageName());
     }
 }

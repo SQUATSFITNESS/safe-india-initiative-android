@@ -1,6 +1,7 @@
-package squats.safeindiainitiative;
+package in.squats.safeindiainitiative;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -31,11 +32,10 @@ public class SafeIndiaMessagingService extends FirebaseMessagingService {
         String helpSeekerFcm = remoteMessage.getData().get("helpSeekerFcm");
         Log.d(TAG, "Notification Message helpSeekerFcm: " + helpSeekerFcm);
 
-        Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("lat", lat);
-        intent.putExtra("long", lng);
-        intent.putExtra("helpSeekerFcm", helpSeekerFcm);
+        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + lat + "," + lng + "&mode=w");
+        Intent intent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
         startActivity(intent);
     }
 }
