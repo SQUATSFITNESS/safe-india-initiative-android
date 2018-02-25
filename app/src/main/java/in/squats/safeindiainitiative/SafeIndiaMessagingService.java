@@ -1,10 +1,15 @@
 package in.squats.safeindiainitiative;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.TaskStackBuilder;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -15,6 +20,7 @@ import com.google.firebase.messaging.RemoteMessage;
 
 public class SafeIndiaMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FCM Service";
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
         // TODO: Handle FCM messages here.
@@ -33,9 +39,33 @@ public class SafeIndiaMessagingService extends FirebaseMessagingService {
         Log.d(TAG, "Notification Message helpSeekerFcm: " + helpSeekerFcm);
 
         Uri gmmIntentUri = Uri.parse("google.navigation:q=" + lat + "," + lng + "&mode=w");
-        Intent intent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
-        startActivity(intent);
+        Intent helpIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+        helpIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        helpIntent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addNextIntentWithParentStack(helpIntent);
+        PendingIntent willHelpPendingIntent =
+                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent noHelpIntent = new Intent("REMOVE_NOTIFICATION");
+        noHelpIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        TaskStackBuilder stackBuilder2 = TaskStackBuilder.create(this);
+        stackBuilder2.addNextIntentWithParentStack(noHelpIntent);
+        PendingIntent willNotHelpPendingIntent =
+                stackBuilder2.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(ns);
+
+        Notification notification = new Notification.Builder(this)
+                .setContentTitle(message)
+                .setContentIntent(willHelpPendingIntent)
+                .setContentText("Select Yes below to navigate to victim").setSmallIcon(R.drawable.ic_launcher_foreground)
+                .addAction(R.drawable.ic_launcher_foreground, "Yes", willHelpPendingIntent)
+                .addAction(R.drawable.ic_launcher_foreground, "No", willNotHelpPendingIntent).build();
+        notification.flags |= Notification.FLAG_AUTO_CANCEL;
+
+        notificationManager.notify(1, notification);
     }
 }

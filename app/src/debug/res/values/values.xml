@@ -8,5 +8,5 @@
     <string name="google_crash_reporting_api_key" translatable="false">AIzaSyC6Kq8nZEDd3NReQIK90q-ZHEThfNsXqsI</string>
     <string name="google_storage_bucket" translatable="false">helloworld-c33a0.appspot.com</string>
     <string name="project_id" translatable="false">helloworld-c33a0</string>
-    <string name="location_update_frequency_millisec" translatable="false">3000</string>
+    <integer name="location_update_frequency_millisec" translatable="false">3000</integer>
 </resources>
