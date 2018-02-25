@@ -2,6 +2,7 @@ package in.squats.safeindiainitiative;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -21,6 +22,7 @@ import javax.net.ssl.HttpsURLConnection;
  */
 
 public class SendPostRequest extends AsyncTask<String, Void, String> {
+    private static final String TAG = SendPostRequest.class.getSimpleName();
 
     private Context appContext;
 
@@ -86,7 +88,8 @@ public class SendPostRequest extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        Toast.makeText(appContext, result,
-                Toast.LENGTH_LONG).show();
+        Log.v(TAG, result);
+//        Toast.makeText(appContext, result,
+//                Toast.LENGTH_LONG).show();
     }
 }

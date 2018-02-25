@@ -50,7 +50,7 @@ public class MainActivity extends Activity implements LocationListener {
     private void sendUserLocationEveryFewSeconds() {
         Log.d(TAG, "sendUserLocationEveryFewSeconds");
         final Handler handler = new Handler();
-        final int delay = 3000; // there is some bug with this value R.integer.location_update_frequency_millisec;
+        final int delay = 10000; // there is some bug with this value R.integer.location_update_frequency_millisec;
         Log.d(TAG, "sendUserLocationEveryFewSeconds: delay " + delay);
         handler.postDelayed(new Runnable() {
             public void run() {
