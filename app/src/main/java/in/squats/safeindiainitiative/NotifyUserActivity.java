@@ -28,16 +28,16 @@ public class NotifyUserActivity extends Activity {
         String helpSeekerFcm = b.getString("helpSeekerFcm");
 
         Log.v(TAG, "lat, long: " + lat + ", " + lng);
-        Uri gmmIntentUri = Uri.parse("google.navigation:q=" + lat + "," + lng + "&mode=w");
-        Intent helpIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-        helpIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        helpIntent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
+        Intent helpIntent = new Intent("in.squats.safeindiainitiative.actions.RECORD_HELPER");
+        helpIntent.putExtra("lat", lat);
+        helpIntent.putExtra("lng", lng);
+        helpIntent.putExtra("helpSeekerFcm", helpSeekerFcm);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addNextIntentWithParentStack(helpIntent);
         PendingIntent willHelpPendingIntent =
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent noHelpIntent = new Intent("REMOVE_NOTIFICATION");
+        Intent noHelpIntent = new Intent("in.squats.safeindiainitiative.actions.NO_HELP");
         noHelpIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         TaskStackBuilder stackBuilder2 = TaskStackBuilder.create(this);
         stackBuilder2.addNextIntentWithParentStack(noHelpIntent);

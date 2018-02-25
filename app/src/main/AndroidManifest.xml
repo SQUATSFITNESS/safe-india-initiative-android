@@ -48,6 +48,26 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="in.squats.safeindiainitiative.actions.NOTIFY_USER" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".HelperService"
+            android:exported="false">
+        </service>
+
+        <activity android:name=".HelperActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="in.squats.safeindiainitiative.actions.RECORD_HELPER" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="in.squats.safeindiainitiative.actions.NO_HELP" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
