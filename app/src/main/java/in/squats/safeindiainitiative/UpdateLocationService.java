@@ -76,75 +76,9 @@ public class UpdateLocationService extends IntentService {
         String locationPosData = "{\"userDetails\": {\"userId\": \"" + deviceId + "\",\"lat\":" + lat + ",\"long\":" + lng + ", \"fcm\":\"" + fcm + "\" }}";
 
         if (lat != 0 && lng != 0) {
-            new SendPostRequest().execute(locationUrl, locationPosData);
+            new SendPostRequest(getApplicationContext()).execute(locationUrl, locationPosData);
         } else {
             Toast.makeText(getApplicationContext(), "Please provide permission to access user location",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
-
-
-    class SendPostRequest extends AsyncTask<String, Void, String> {
-
-        protected void onPreExecute() {
-        }
-
-        protected String doInBackground(String... arg0) {
-
-            try {
-
-                URL url = new URL(arg0[0]);
-
-                JSONObject postDataParams = new JSONObject();
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000 /* milliseconds */);
-                conn.setConnectTimeout(15000 /* milliseconds */);
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-                conn.setRequestProperty("Content-Type", "application/json");
-
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(arg0[1]);
-
-                writer.flush();
-                writer.close();
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-
-                if (responseCode == HttpsURLConnection.HTTP_OK) {
-
-                    BufferedReader in = new BufferedReader(new
-                            InputStreamReader(
-                            conn.getInputStream()));
-
-                    StringBuffer sb = new StringBuffer("");
-                    String line = "";
-
-                    while ((line = in.readLine()) != null) {
-
-                        sb.append(line);
-                        break;
-                    }
-
-                    in.close();
-                    return sb.toString();
-
-                } else {
-                    return new String("API call failed. URL: " + arg0[0] + " param: " + arg0[1] + " Response code: " + responseCode);
-                }
-            } catch (Exception e) {
-                return new String("Exception: " + e.getMessage());
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            Toast.makeText(getApplicationContext(), result,
                     Toast.LENGTH_LONG).show();
         }
     }

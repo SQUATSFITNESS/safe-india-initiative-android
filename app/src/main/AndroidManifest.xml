@@ -28,9 +28,6 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".ListenToUserService"
-            android:exported="false" />
         <service android:name=".SafeIndiaMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

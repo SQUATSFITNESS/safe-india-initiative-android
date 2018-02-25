@@ -1,5 +1,6 @@
 package in.squats.safeindiainitiative;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -16,10 +17,9 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-
 public class MainActivity extends Activity implements LocationListener {
-    public static final int LOCATION_REQUEST_CODE = 99;
+    private static final int REQUEST_LOCATION_PERMISSION_ID = 99;
+    private static final int REQUEST_AUDIO_PERMISSIONS_ID = 33;
     private static final String TAG = MainActivity.class.getSimpleName();
 
     LocationManager lm;
@@ -35,13 +35,21 @@ public class MainActivity extends Activity implements LocationListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_listen_to_user);
 
-        requestLocationPermission();
+        // Initialize Text To Speech engine
+        TTS.init(getApplicationContext());
+
+        // Get location permission and send user location
+        requestLocationAndAudioPermission();
 
         deviceId = Settings.Secure.getString(getContentResolver(),
-                Settings.Secure.ANDROID_ID);;
-        final Handler handler = new Handler();
-        final int delay = 1000; //milliseconds
+                Settings.Secure.ANDROID_ID);
 
+        sendUserLocationEveryFewSeconds();
+    }
+
+    private void sendUserLocationEveryFewSeconds() {
+        final Handler handler = new Handler();
+        final int delay = R.string.location_update_frequency_millisec;
         handler.postDelayed(new Runnable() {
             public void run() {
                 Log.d(TAG, "Calling service to update user location");
@@ -49,22 +57,25 @@ public class MainActivity extends Activity implements LocationListener {
                 handler.postDelayed(this, delay);
             }
         }, delay);
-        ListenToUserService.startActionListenToUser(getApplicationContext(), null);
     }
 
-    private void requestLocationPermission() {
+
+    private void requestLocationAndAudioPermission() {
         lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
         Criteria c = new Criteria();
         provider = lm.getBestProvider(c, false);
         ActivityCompat.requestPermissions(this,
-                new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_REQUEST_CODE);
+                new String[]{
+                        android.Manifest.permission.ACCESS_FINE_LOCATION,
+                        android.Manifest.permission.RECORD_AUDIO},
+                REQUEST_LOCATION_PERMISSION_ID);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case LOCATION_REQUEST_CODE: {
+            case REQUEST_LOCATION_PERMISSION_ID: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -85,8 +96,26 @@ public class MainActivity extends Activity implements LocationListener {
                             ((SafeIndiaApplication) this.getApplication()).userLong = lng;
                         }
                     }
+
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.RECORD_AUDIO)
+                            == PackageManager.PERMISSION_GRANTED) {
+                        new ListenToUser(getApplicationContext(), this).start();
+                    }
+
                 } else {
-                    Toast.makeText(getApplicationContext(), "This app cannot work without knowing your location",
+                    Toast.makeText(getApplicationContext(), "This app cannot work without knowing your location and recording audio",
+                            Toast.LENGTH_LONG).show();
+                    this.requestLocationAndAudioPermission();
+                }
+                return;
+            }
+            case REQUEST_AUDIO_PERMISSIONS_ID: {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission granted
+                } else {
+                    Toast.makeText(getApplicationContext(), "This app cannot work without permission to record audio",
                             Toast.LENGTH_LONG).show();
                 }
                 return;
@@ -114,4 +143,31 @@ public class MainActivity extends Activity implements LocationListener {
     public void onProviderDisabled(String s) {
 
     }
+
+
+    public void requestAudioRecordPermission() {
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    android.Manifest.permission.RECORD_AUDIO)) {
+
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                        new String[]{android.Manifest.permission.RECORD_AUDIO},
+                        REQUEST_AUDIO_PERMISSIONS_ID);
+
+            }
+        }
+    }
+
+
 }
