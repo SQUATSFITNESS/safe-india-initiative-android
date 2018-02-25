@@ -1,6 +1,5 @@
 package in.squats.safeindiainitiative;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -163,6 +162,11 @@ public class ListenToUser {
                         String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
                         String helpPosData = "{\"userDetails\": {\"userId\": \"" + application.deviceId + "\",\"lat\":" + application.userLat + ",\"long\":" + application.userLat + ", \"fcm\":\"" + fcm + "\" }}";
                         new SendPostRequest(appContext).execute(helpUrl, helpPosData);
+
+                        if (application.userLat != 0 && application.userLong != 0) {
+                            String helperUrl = "https://safe-india-initiative-api.herokuapp.com/api/helpers?helpSeekerFcm=" + fcm;
+                            new SendGetRequest(appContext).execute(helperUrl);
+                        }
                     }
                 }
             }
