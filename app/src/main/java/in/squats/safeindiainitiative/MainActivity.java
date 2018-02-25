@@ -6,14 +6,21 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+import com.google.firebase.iid.FirebaseInstanceId;
+
+public class MainActivity extends Activity implements LocationListener {
     public static final int LOCATION_REQUEST_CODE = 99;
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     LocationManager lm;
     String provider;
@@ -29,7 +36,19 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_listen_to_user);
 
         requestLocationPermission();
-        UpdateLocationService.startActionUpdateLocation(getApplicationContext());
+
+        deviceId = Settings.Secure.getString(getContentResolver(),
+                Settings.Secure.ANDROID_ID);;
+        final Handler handler = new Handler();
+        final int delay = 1000; //milliseconds
+
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                Log.d(TAG, "Calling service to update user location");
+                UpdateLocationService.startActionUpdateLocation(getApplicationContext(), lat, lng, deviceId);
+                handler.postDelayed(this, delay);
+            }
+        }, delay);
         ListenToUserService.startActionListenToUser(getApplicationContext(), null);
     }
 
@@ -73,5 +92,26 @@ public class MainActivity extends Activity {
                 return;
             }
         }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        lng = l.getLongitude();
+        lat = l.getLatitude();
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
     }
 }
