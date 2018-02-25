@@ -44,6 +44,8 @@ public class MainActivity extends Activity implements LocationListener {
         deviceId = Settings.Secure.getString(getContentResolver(),
                 Settings.Secure.ANDROID_ID);
 
+        ((SafeIndiaApplication) this.getApplication()).deviceId = deviceId;
+
         sendUserLocationEveryFewSeconds();
     }
 
@@ -166,7 +168,6 @@ public class MainActivity extends Activity implements LocationListener {
                 ActivityCompat.requestPermissions(this,
                         new String[]{android.Manifest.permission.RECORD_AUDIO},
                         REQUEST_AUDIO_PERMISSIONS_ID);
-
             }
         }
     }

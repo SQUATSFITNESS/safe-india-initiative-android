@@ -10,6 +10,8 @@ import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import java.util.ArrayList;
 
 public class ListenToUser {
@@ -41,7 +43,6 @@ public class ListenToUser {
                 startRecognizeSpeech();
             }
         };
-
         startRecognizeSpeech();
     }
 
@@ -149,6 +150,7 @@ public class ListenToUser {
         @Override
         public void onResults(Bundle data) {
             ArrayList<String> results = data.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            SafeIndiaApplication application = (SafeIndiaApplication) caller.parentActivity.getApplication();
 
             for (String s : results) {
 
@@ -156,7 +158,11 @@ public class ListenToUser {
                 for (String triggerWord : triggerWords) {
                     if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
                         Log.d(SRTAG, "Recognized word: " + triggerWord);
-                        //SendPOSTCallForHelp();
+
+                        String fcm = FirebaseInstanceId.getInstance().getToken();
+                        String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
+                        String helpPosData = "{\"userDetails\": {\"userId\": \"" + application.deviceId + "\",\"lat\":" + application.userLat + ",\"long\":" + application.userLat + ", \"fcm\":\"" + fcm + "\" }}";
+                        new SendPostRequest(appContext).execute(helpUrl, helpPosData);
                     }
                 }
             }
