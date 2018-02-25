@@ -1,5 +1,6 @@
 package in.squats.safeindiainitiative;
 
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -8,36 +9,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 
-import com.google.firebase.messaging.FirebaseMessagingService;
-import com.google.firebase.messaging.RemoteMessage;
+public class NotifyUserActivity extends Activity {
+    private static final String TAG = NotifyUserActivity.class.getSimpleName();
 
-/**
- * Created by souvik on 12/17/2017.
- */
-
-public class SafeIndiaMessagingService extends FirebaseMessagingService {
-    private static final String TAG = SafeIndiaMessagingService.class.getSimpleName();
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
-    public void onMessageReceived(RemoteMessage remoteMessage) {
-        // TODO: Handle FCM messages here.
-        // If the application is in the foreground handle both data and notification messages here.
-        // Also if you intend on generating your own notifications as a result of a received FCM
-        // message, here is where that should be initiated.
-        String message = remoteMessage.getNotification().getBody();
-        Log.d(TAG, "From: " + remoteMessage.getFrom());
-        Log.d(TAG, "Notification Message Body: " + message);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_notify_user);
 
-        Double lat = Double.parseDouble(remoteMessage.getData().get("lat"));
-        Log.d(TAG, "Notification Message lat: " + lat);
-        Double lng = Double.parseDouble(remoteMessage.getData().get("long"));
-        Log.d(TAG, "Notification Message lat: " + lng);
-        String helpSeekerFcm = remoteMessage.getData().get("helpSeekerFcm");
-        Log.d(TAG, "Notification Message helpSeekerFcm: " + helpSeekerFcm);
+        Bundle b = getIntent().getExtras();
+        String lat = b.getString("lat");
+        String lng = b.getString("long");
+        String helpSeekerFcm = b.getString("helpSeekerFcm");
 
+        Log.v(TAG, "lat, long: " + lat + ", " + lng);
         Uri gmmIntentUri = Uri.parse("google.navigation:q=" + lat + "," + lng + "&mode=w");
         Intent helpIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
         helpIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -59,7 +49,7 @@ public class SafeIndiaMessagingService extends FirebaseMessagingService {
                 (NotificationManager) getSystemService(ns);
 
         Notification notification = new Notification.Builder(this)
-                .setContentTitle(message)
+                .setContentTitle("Can you please help?")
                 .setContentIntent(willHelpPendingIntent)
                 .setContentText("Select Yes below to navigate to victim").setSmallIcon(R.drawable.ic_launcher_foreground)
                 .addAction(R.drawable.ic_launcher_foreground, "Yes", willHelpPendingIntent)
