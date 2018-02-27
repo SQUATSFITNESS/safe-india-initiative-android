@@ -53,6 +53,17 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".NotifyVictimActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="in.squats.safeindiainitiative.actions.NOTIFY_VICTIM" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".HelperService"
             android:exported="false">

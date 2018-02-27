@@ -78,9 +78,9 @@ public class SendGetRequest extends AsyncTask<String, Void, String> {
 
             for (int i = 0; i < helpers.length(); i++) {
                 JSONObject helper = (JSONObject) helpers.get(i);
-                Double lat = (Double) helper.get("lat");
-                Double lng = (Double) helper.get("long");
-                if (lat != 0 && lng != 0) {
+                String lat = helper.getString("lat");
+                String lng = helper.getString("lng");
+                if (lat != "0" && lng != "0") {
                     Log.v(TAG, "Help arriving soon...");
                 }
             }

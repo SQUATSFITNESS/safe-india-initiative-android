@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 
 public class HelperActivity extends Activity {
-    private static final String TAG = NotifyUserActivity.class.getSimpleName();
+    private static final String TAG = HelperActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
