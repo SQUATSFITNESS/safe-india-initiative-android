@@ -22,9 +22,9 @@ public class HelperService extends IntentService {
     private static final String ACTION_NO_HELP = "in.squats.safeindiainitiative.actions.NO_HELP";
 
     // TODO: Rename parameters
-    private static final String EXTRA_LAT = "in.squats.safeindiainitiative.extra.LAT";
-    private static final String EXTRA_LNG = "in.squats.safeindiainitiative.extra.LNG";
-    private static final String EXTRA_HELP_SEEKER_FCM = "in.squats.safeindiainitiative.extra.HELP_SEEKER_FCM";
+    private static final String EXTRA_LAT = "lat";
+    private static final String EXTRA_LNG = "lng";
+    private static final String EXTRA_HELP_SEEKER_FCM = "helpSeekerFcm";
 
     public HelperService() {
         super("HelperService");

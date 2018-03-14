@@ -28,8 +28,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class UpdateLocationService extends IntentService {
     private static final String TAG = UpdateLocationService.class.getSimpleName();
     private static final String ACTION_UPDATE_LOCATION = "in.squats.safeindiainitiative.action.UPDATE_LOCATION";
-    private static final String EXTRA_LAT = "in.squats.safeindiainitiative.extra.LAT";
-    private static final String EXTRA_LNG = "in.squats.safeindiainitiative.extra.LNG";
+    private static final String EXTRA_LAT = "lat";
+    private static final String EXTRA_LNG = "lng";
     private static final String EXTRA_DEVICE_ID = "in.squats.safeindiainitiative.extra.DEVICE_ID";
 
     public UpdateLocationService() {

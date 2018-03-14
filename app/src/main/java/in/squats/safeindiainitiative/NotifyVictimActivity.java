@@ -26,6 +26,6 @@ public class NotifyVictimActivity extends Activity {
         String lng = b.getString("long");
 
         Log.v(TAG, "lat, long: " + lat + ", " + lng);
-        TTS.speak("Help arriving soon");
+        TTS.speak("People arriving soon to you");
     }
 }

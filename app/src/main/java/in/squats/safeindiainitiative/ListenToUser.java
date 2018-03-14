@@ -52,6 +52,12 @@ public class ListenToUser {
         recog.startListening(intent);
     }
 
+    private void stopRecognizeSpeech() {
+        Log.d(TAG, "stopRecognizeSpeech");
+        handler.removeCallbacks(readyRecognizeSpeech);
+        recog.stopListening();
+    }
+
     public void checkAudioRecordPermission() {
         parentActivity.requestAudioRecordPermission();
     }
@@ -68,6 +74,7 @@ public class ListenToUser {
 
         @Override
         public void onReadyForSpeech(Bundle params) {
+            parentActivity.status.setText("Speak now...");
             Log.v(SRTAG, "Speak now...");
         }
 
@@ -92,6 +99,7 @@ public class ListenToUser {
 
         @Override
         public void onEndOfSpeech() {
+            parentActivity.status.setText("");
             Log.v(SRTAG, "End of speech");
             caller.handler.postDelayed(caller.readyRecognizeSpeech, 500);
         }
@@ -151,20 +159,27 @@ public class ListenToUser {
             ArrayList<String> results = data.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
             SafeIndiaApplication application = (SafeIndiaApplication) caller.parentActivity.getApplication();
 
+            String result = "You said: \n";
+
             for (String s : results) {
 
+                result += s + "\n";
                 String[] triggerWords = new String[]{"help", "bachao"};
                 for (String triggerWord : triggerWords) {
                     if (s.equals(triggerWord) || s.startsWith(triggerWord + " ") || s.endsWith(" " + triggerWord) || s.indexOf(" " + triggerWord + " ") > -1) {
                         Log.d(SRTAG, "Recognized word: " + triggerWord);
 
+                        TTS.speak("Sent notifications to people around to reach you!");
+                        results = null;
                         String fcm = FirebaseInstanceId.getInstance().getToken();
                         String helpUrl = "https://safe-india-initiative-api.herokuapp.com/api/help";
-                        String helpPosData = "{\"userDetails\": {\"userId\": \"" + application.deviceId + "\",\"lat\":" + application.userLat + ",\"long\":" + application.userLat + ", \"fcm\":\"" + fcm + "\" }}";
+                        String helpPosData = "{\"userDetails\": {\"userId\": \"" + application.deviceId + "\",\"lat\":" + application.userLat + ",\"long\":" + application.userLong + ", \"fcm\":\"" + fcm + "\" }}";
                         new SendPostRequest(appContext).execute(helpUrl, helpPosData);
+                        break;
                     }
                 }
             }
+            parentActivity.subStatus.setText(result);
 
             maxRms = -10;
         }

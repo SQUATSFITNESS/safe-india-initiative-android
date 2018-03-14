@@ -13,8 +13,8 @@ public class HelperActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_helper);
         Intent intent = getIntent();
-        String lat = intent.getStringExtra("lat");
-        String lng = intent.getStringExtra("lng");
+        String lat = Double.toString(intent.getDoubleExtra("lat",0.0));
+        String lng = Double.toString(intent.getDoubleExtra("lng",0.0));
         String helpSeekerFcm = intent.getStringExtra("helpSeekerFcm");
 
         Log.v(TAG, "starting Helper service");

@@ -35,11 +35,6 @@ public class SafeIndiaMessagingService extends FirebaseMessagingService {
 
 
         if(msgType.equals("NOTIFY_USER")) {
-            Log.v(TAG, "Notifying nearby user of help needed");
-            String message = remoteMessage.getNotification().getBody();
-            Log.d(TAG, "From: " + remoteMessage.getFrom());
-            Log.d(TAG, "Notification Message Body: " + message);
-
             Double lat = Double.parseDouble(remoteMessage.getData().get("lat"));
             Log.d(TAG, "Notification Message lat: " + lat);
             Double lng = Double.parseDouble(remoteMessage.getData().get("long"));
@@ -69,7 +64,7 @@ public class SafeIndiaMessagingService extends FirebaseMessagingService {
                     (NotificationManager) getSystemService(ns);
 
             Notification notification = new Notification.Builder(this)
-                    .setContentTitle(message)
+                    .setContentTitle("Can you please help?")
                     .setContentIntent(willHelpPendingIntent)
                     .setContentText("Select Yes below to navigate to victim").setSmallIcon(R.drawable.ic_launcher_foreground)
                     .addAction(R.drawable.ic_launcher_foreground, "Yes", willHelpPendingIntent)

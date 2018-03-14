@@ -35,6 +35,8 @@ public class SendPostRequest extends AsyncTask<String, Void, String> {
 
     protected String doInBackground(String... arg0) {
 
+        Log.v(TAG, arg0[0]);
+        Log.v(TAG, arg0[1]);
         try {
 
             URL url = new URL(arg0[0]);

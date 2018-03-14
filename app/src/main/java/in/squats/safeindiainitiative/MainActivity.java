@@ -15,12 +15,15 @@ import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements LocationListener {
     private static final int REQUEST_LOCATION_PERMISSION_ID = 99;
     private static final int REQUEST_AUDIO_PERMISSIONS_ID = 33;
     private static final String TAG = MainActivity.class.getSimpleName();
+    public TextView status;
+    public TextView subStatus;
 
     LocationManager lm;
     String provider;
@@ -47,6 +50,9 @@ public class MainActivity extends Activity implements LocationListener {
         ((SafeIndiaApplication) this.getApplication()).deviceId = deviceId;
 
         sendUserLocationEveryFewSeconds();
+
+        status = (TextView) findViewById(R.id.status);
+        subStatus = (TextView) findViewById(R.id.sub_status);
     }
 
     private void sendUserLocationEveryFewSeconds() {
@@ -65,14 +71,16 @@ public class MainActivity extends Activity implements LocationListener {
 
 
     private void requestLocationAndAudioPermission() {
-        lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-        Criteria c = new Criteria();
-        provider = lm.getBestProvider(c, false);
-        ActivityCompat.requestPermissions(this,
-                new String[]{
-                        android.Manifest.permission.ACCESS_FINE_LOCATION,
-                        android.Manifest.permission.RECORD_AUDIO},
-                REQUEST_LOCATION_PERMISSION_ID);
+        try {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{
+                            android.Manifest.permission.ACCESS_FINE_LOCATION,
+                            android.Manifest.permission.RECORD_AUDIO},
+                    REQUEST_LOCATION_PERMISSION_ID);
+        }
+        catch(Exception e) {
+            Log.e(TAG, e.toString());
+        }
     }
 
     @Override
@@ -90,6 +98,10 @@ public class MainActivity extends Activity implements LocationListener {
                             android.Manifest.permission.ACCESS_FINE_LOCATION)
                             == PackageManager.PERMISSION_GRANTED) {
 
+                        lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+                        Criteria c = new Criteria();
+                        provider = lm.getBestProvider(c, false);
+                        Log.v(TAG, "Provider: " + provider);
                         l = lm.getLastKnownLocation(provider);
                         if (l != null) {
                             //get latitude and longitude of the location
